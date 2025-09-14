@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codebase Q&A System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #fafbfc;
+            min-height: 100vh;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 40px 0;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            font-weight: 300;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e8ecf0;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .panel:hover {
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .panel h2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .repo-input {
+            margin-bottom: 24px;
+        }
+
+        .repo-input label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 500;
+            color: #34495e;
+            font-size: 0.95rem;
+        }
+
+        .repo-input input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e8ecf0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .repo-input input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-right: 12px;
+            margin-bottom: 12px;
+            letter-spacing: 0.3px;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .status {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .status.success {
+            background: #d5f4e6;
+            color: #27ae60;
+            border: 1px solid #a9dfbf;
+        }
+
+        .status.error {
+            background: #fadbd8;
+            color: #e74c3c;
+            border: 1px solid #f1948a;
+        }
+
+        .status.info {
+            background: #d6eaf8;
+            color: #2980b9;
+            border: 1px solid #85c1e9;
+        }
+
+        .file-tree {
+            max-height: 420px;
+            overflow-y: auto;
+            border: 1px solid #e8ecf0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafbfc;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .file-item {
+            padding: 4px 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+            margin: 2px 0;
+        }
+
+        .file-item:hover {
+            background-color: #e8f4fd;
+            color: #2980b9;
+        }
+
+        .file-item.directory {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .file-item.file {
+            color: #7f8c8d;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 520px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #e8ecf0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #fafbfc;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            max-width: 85%;
+            line-height: 1.6;
+        }
+
+        .message.user {
+            background: #3498db;
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant {
+            background: white;
+            border: 1px solid #e8ecf0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message .sources {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e8ecf0;
+        }
+
+        .message .sources h4 {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .message .sources .source {
+            font-size: 12px;
+            color: #5d6d7e;
+            margin-bottom: 6px;
+            padding: 6px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 16px 20px;
+            border: 2px solid #e8ecf0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #fafbfc;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 32px;
+            color: #7f8c8d;
+        }
+
+        .spinner {
+            border: 3px solid #f1f3f4;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .project-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .info-card {
+            background: #f8f9fa;
+            padding: 24px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e8ecf0;
+            transition: all 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-card h3 {
+            font-size: 2.2rem;
+            color: #3498db;
+            margin-bottom: 8px;
+            font-weight: 300;
+        }
+
+        .info-card p {
+            color: #7f8c8d;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .file-types {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .file-type {
+            background: #3498db;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f3f4;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #bdc3c7;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #95a5a6;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+
+            .container {
+                padding: 20px 16px;
+            }
+
+            .panel {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Codebase Q&A System</h1>
+            <p>Ask questions about any GitHub repository and get intelligent answers</p>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h2>📁 Load Repository</h2>
+                <div class="repo-input">
+                    <label for="repoUrl">GitHub Repository URL:</label>
+                    <input type="text" id="repoUrl" placeholder="https://github.com/username/repository" />
+                </div>
+                <button class="btn" onclick="loadRepository()">Load Repository</button>
+                <button class="btn btn-secondary" onclick="loadLocalProject()">Load Local Project</button>
+                
+                <div id="status"></div>
+                
+                <div id="projectInfo" style="display: none;">
+                    <h3>📊 Project Information</h3>
+                    <div class="project-info" id="projectStats"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>🗂️ Project Structure</h2>
+                <div id="fileTree" class="file-tree">
+                    <p style="text-align: center; color: #7f8c8d; padding: 20px;">
+                        Load a repository to see the file structure
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>💬 Ask Questions</h2>
+            <div class="chat-container">
+                <div id="chatMessages" class="chat-messages">
+                    <div class="message assistant">
+                        <p>👋 Hello! Load a GitHub repository and ask me anything about the codebase.</p>
+                        <p>Try questions like:</p>
+                        <ul style="margin-top: 10px; padding-left: 20px;">
+                            <li>"How does authentication work?"</li>
+                            <li>"What are the main components?"</li>
+                            <li>"Where is the database connection handled?"</li>
+                            <li>"Explain the API endpoints"</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Thinking...</p>
+                </div>
+                
+                <div class="chat-input">
+                    <input type="text" id="questionInput" placeholder="Ask a question about the codebase..." 
+                           onkeypress="handleKeyPress(event)" />
+                    <button class="btn" onclick="askQuestion()">Ask</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProject = null;
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showLoading(show = true) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function addMessage(content, type = 'assistant', sources = []) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            let sourcesHtml = '';
+            if (sources && sources.length > 0) {
+                sourcesHtml = '<div class="sources"><h4>Sources:</h4>';
+                sources.forEach(source => {
+                    sourcesHtml += `<div class="source">📄 ${source.file}</div>`;
+                });
+                sourcesHtml += '</div>';
+            }
+            
+            messageDiv.innerHTML = `<p>${content}</p>${sourcesHtml}`;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function loadRepository() {
+            const repoUrl = document.getElementById('repoUrl').value.trim();
+            
+            if (!repoUrl) {
+                showStatus('Please enter a GitHub repository URL', 'error');
+                return;
+            }
+
+            showStatus('Loading repository...', 'info');
+            showLoading(true);
+
+            try {
+                const response = await fetch('/api/clone-repo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ repo_url: repoUrl })
+                });
+
+                const data = await response.json();
+                showLoading(false);
+
+                if (data.success) {
+                    showStatus(data.message, 'success');
+                    currentProject = data;
+                    displayProjectInfo(data);
+                    loadFileTree();
+                    addMessage(`✅ Repository loaded successfully! Found ${data.file_count} files.`);
+                } else {
+                    showStatus(data.message, 'error');
+                }
+            } catch (error) {
+                showLoading(false);
+                showStatus('Error loading repository: ' + error.message, 'error');
+            }
+        }
+
+        async function loadLocalProject() {
+            showStatus('Loading local project...', 'info');
+            showLoading(true);
+
+            try {
+                const response = await fetch('/api/clone-repo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ repo_url: 'local' })
+                });
+
+                const data = await response.json();
+                showLoading(false);
+
+                if (data.success) {
+                    showStatus(data.message, 'success');
+                    currentProject = data;
+                    displayProjectInfo(data);
+                    loadFileTree();
+                    addMessage(`✅ Local project loaded successfully! Found ${data.file_count} files.`);
+                } else {
+                    showStatus(data.message, 'error');
+                }
+            } catch (error) {
+                showLoading(false);
+                showStatus('Error loading local project: ' + error.message, 'error');
+            }
+        }
+
+        function displayProjectInfo(data) {
+            const projectInfo = document.getElementById('projectInfo');
+            const projectStats = document.getElementById('projectStats');
+            
+            projectInfo.style.display = 'block';
+            projectStats.innerHTML = `
+                <div class="info-card">
+                    <h3>${data.file_count}</h3>
+                    <p>Total Files</p>
+                </div>
+            `;
+        }
+
+        async function loadFileTree() {
+            try {
+                const response = await fetch('/api/file-tree');
+                const data = await response.json();
+                
+                const fileTree = document.getElementById('fileTree');
+                if (data.file_tree && data.file_tree.length > 0) {
+                    let treeHtml = '';
+                    data.file_tree.forEach(file => {
+                        const icon = file.type === 'directory' ? '📁' : '📄';
+                        treeHtml += `<div class="file-item ${file.type}" onclick="loadFile('${file.path}')">${file.prefix}${icon} ${file.name}</div>`;
+                    });
+                    fileTree.innerHTML = treeHtml;
+                } else {
+                    fileTree.innerHTML = '<p style="text-align: center; color: #7f8c8d;">No files found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading file tree:', error);
+            }
+        }
+
+        async function loadFile(filePath) {
+            try {
+                const response = await fetch(`/api/file-content?path=${encodeURIComponent(filePath)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    // For now, just show the content in an alert
+                    // In a real app, you'd want a proper file viewer
+                    alert(`File: ${data.file_name}\n\nContent:\n${data.content.substring(0, 500)}...`);
+                }
+            } catch (error) {
+                console.error('Error loading file:', error);
+            }
+        }
+
+        async function askQuestion() {
+            const questionInput = document.getElementById('questionInput');
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                showStatus('Please enter a question', 'error');
+                return;
+            }
+
+            if (!currentProject) {
+                showStatus('Please load a repository first', 'error');
+                return;
+            }
+
+            // Add user message
+            addMessage(question, 'user');
+            questionInput.value = '';
+            
+            showLoading(true);
+
+            try {
+                const response = await fetch('/api/ask-question', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+
+                const data = await response.json();
+                showLoading(false);
+
+                if (data.success) {
+                    addMessage(data.answer, 'assistant', data.sources);
+                } else {
+                    addMessage('Error: ' + data.message, 'assistant');
+                }
+            } catch (error) {
+                showLoading(false);
+                addMessage('Error: ' + error.message, 'assistant');
+            }
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                askQuestion();
+            }
+        }
+    </script>
+</body>
+</html>
