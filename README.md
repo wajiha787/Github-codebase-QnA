@@ -87,12 +87,16 @@ Visit: http://127.0.0.1:5000
 
 Paste a GitHub repo URL and start asking questions!
 
-📸 Screenshots
+## 📸 Screenshots  
 
-👉 
-(gitrepo1.png)
-(gitrepo2.png)
-(gitrepo3.png)
+### Web App UI  
+![Web UI Screenshot](screenshots/gitrepo1.png)  
+
+### CLI Example  
+![CLI Screenshot](screenshots/gitrepo2.png)  
+
+### Another Example  
+![Extra Screenshot](screenshots/gitrepo3.png)  
 
 Web App UI
 
