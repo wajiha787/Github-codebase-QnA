@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Tools API Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .input-group input, .input-group textarea, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .tool-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .tool-card h3 {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .tool-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .results {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .results h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .results pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .success {
+            background: #f0fff4;
+            color: #2f855a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Multi-Tools API Agent</h1>
+            <p>Intelligent codebase analysis with multiple specialized tools</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- Repository Loading Section -->
+            <div class="section">
+                <h2>📁 Load Repository</h2>
+                <div class="input-group">
+                    <label for="repoUrl">Repository URL or 'local' for local project:</label>
+                    <input type="text" id="repoUrl" placeholder="https://github.com/user/repo or 'local'" value="local">
+                </div>
+                <button class="btn" onclick="loadRepository()">Load Repository</button>
+                <div id="loadStatus"></div>
+            </div>
+            
+            <!-- Tools Section -->
+            <div class="section">
+                <h2>🛠️ Available Analysis Tools</h2>
+                <div class="tools-grid" id="toolsGrid">
+                    <div class="loading">Loading tools...</div>
+                </div>
+            </div>
+            
+            <!-- AI Configuration Section -->
+            <div class="section">
+                <h2>🤖 AI Configuration</h2>
+                <div class="input-group">
+                    <label for="aiService">AI Service:</label>
+                    <select id="aiService" onchange="updateAIStatus()">
+                        <option value="none">None (Basic Analysis)</option>
+                        <option value="openai">OpenAI GPT</option>
+                        <option value="anthropic">Anthropic Claude</option>
+                    </select>
+                </div>
+                <div class="input-group" id="apiKeyGroup" style="display: none;">
+                    <label for="apiKey">API Key:</label>
+                    <input type="password" id="apiKey" placeholder="Enter your API key">
+                </div>
+                <button class="btn" onclick="configureAI()">Configure AI</button>
+                <div id="aiStatus"></div>
+            </div>
+
+            <!-- AI Agent Section -->
+            <div class="section">
+                <h2>🤖 AI Agent Analysis</h2>
+                <div class="input-group">
+                    <label for="question">Ask a question about the codebase:</label>
+                    <textarea id="question" rows="3" placeholder="e.g., What dependencies does this project use? Are there any security issues? Is there a database being used?"></textarea>
+                </div>
+                <button class="btn" onclick="askQuestion()">Analyze with AI Agent</button>
+                <div id="agentResults"></div>
+            </div>
+            
+            <!-- File Tree Section -->
+            <div class="section">
+                <h2>📂 Project Structure</h2>
+                <button class="btn" onclick="loadFileTree()">Load File Tree</button>
+                <div id="fileTree"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProject = null;
+        
+        // Load available tools on page load
+        window.onload = function() {
+            loadTools();
+            updateAIStatus();
+        };
+        
+        async function loadTools() {
+            try {
+                const response = await fetch('/api/tools/list');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayTools(data.tools);
+                } else {
+                    document.getElementById('toolsGrid').innerHTML = '<div class="error">Failed to load tools</div>';
+                }
+            } catch (error) {
+                document.getElementById('toolsGrid').innerHTML = '<div class="error">Error loading tools: ' + error.message + '</div>';
+            }
+        }
+        
+        function displayTools(tools) {
+            const toolsGrid = document.getElementById('toolsGrid');
+            toolsGrid.innerHTML = '';
+            
+            for (const [toolName, toolInfo] of Object.entries(tools)) {
+                const toolCard = document.createElement('div');
+                toolCard.className = 'tool-card';
+                toolCard.onclick = () => executeTool(toolName);
+                toolCard.innerHTML = `
+                    <h3>${toolName.replace(/_/g, ' ').toUpperCase()}</h3>
+                    <p>${toolInfo.description}</p>
+                `;
+                toolsGrid.appendChild(toolCard);
+            }
+        }
+        
+        async function loadRepository() {
+            const repoUrl = document.getElementById('repoUrl').value;
+            const statusDiv = document.getElementById('loadStatus');
+            
+            if (!repoUrl) {
+                statusDiv.innerHTML = '<div class="error">Please enter a repository URL</div>';
+                return;
+            }
+            
+            statusDiv.innerHTML = '<div class="loading">Loading repository...</div>';
+            
+            try {
+                const response = await fetch('/api/clone-repo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ repo_url: repoUrl })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentProject = true;
+                    statusDiv.innerHTML = `<div class="success">✅ ${data.message} (${data.file_count} files)</div>`;
+                } else {
+                    statusDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function executeTool(toolName) {
+            if (!currentProject) {
+                alert('Please load a repository first');
+                return;
+            }
+            
+            const statusDiv = document.getElementById('agentResults');
+            statusDiv.innerHTML = '<div class="loading">Executing tool...</div>';
+            
+            try {
+                const response = await fetch('/api/tools/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        tool_name: toolName,
+                        parameters: {}
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusDiv.innerHTML = `
+                        <div class="results">
+                            <h3>🔧 ${toolName.replace(/_/g, ' ').toUpperCase()} Results</h3>
+                            <pre>${JSON.stringify(data.result, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    statusDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function askQuestion() {
+            const question = document.getElementById('question').value;
+            const resultsDiv = document.getElementById('agentResults');
+            
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+            
+            if (!currentProject) {
+                alert('Please load a repository first');
+                return;
+            }
+            
+            resultsDiv.innerHTML = '<div class="loading">AI Agent is analyzing...</div>';
+            
+            try {
+                const response = await fetch('/api/agent/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ question: question })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultsDiv.innerHTML = `
+                        <div class="results">
+                            <h3>🤖 AI Agent Response</h3>
+                            <p><strong>Tools used:</strong> ${data.tools_used.join(', ')}</p>
+                            <pre>${data.response}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `<div class="error">❌ ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function loadFileTree() {
+            if (!currentProject) {
+                alert('Please load a repository first');
+                return;
+            }
+            
+            const fileTreeDiv = document.getElementById('fileTree');
+            fileTreeDiv.innerHTML = '<div class="loading">Loading file tree...</div>';
+            
+            try {
+                const response = await fetch('/api/file-tree');
+                const data = await response.json();
+                
+                if (data.file_tree) {
+                    let treeHtml = '<div class="results"><h3>📂 Project Structure</h3><pre>';
+                    for (const file of data.file_tree.slice(0, 50)) {
+                        treeHtml += `${file.prefix}${file.name} (${file.type})\n`;
+                    }
+                    treeHtml += '</pre></div>';
+                    fileTreeDiv.innerHTML = treeHtml;
+                } else {
+                    fileTreeDiv.innerHTML = '<div class="error">No file tree available</div>';
+                }
+            } catch (error) {
+                fileTreeDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        function updateAIStatus() {
+            const service = document.getElementById('aiService').value;
+            const apiKeyGroup = document.getElementById('apiKeyGroup');
+            
+            if (service === 'none') {
+                apiKeyGroup.style.display = 'none';
+            } else {
+                apiKeyGroup.style.display = 'block';
+            }
+            
+            // Load current AI status
+            loadAIStatus();
+        }
+        
+        async function loadAIStatus() {
+            try {
+                const response = await fetch('/api/ai/status');
+                const data = await response.json();
+                
+                const statusDiv = document.getElementById('aiStatus');
+                if (data.is_configured) {
+                    statusDiv.innerHTML = `<div class="success">✅ AI configured: ${data.service}</div>`;
+                } else {
+                    statusDiv.innerHTML = `<div class="error">⚠️ AI not configured. Using basic analysis.</div>`;
+                }
+            } catch (error) {
+                document.getElementById('aiStatus').innerHTML = `<div class="error">❌ Error loading AI status: ${error.message}</div>`;
+            }
+        }
+        
+        async function configureAI() {
+            const service = document.getElementById('aiService').value;
+            const apiKey = document.getElementById('apiKey').value;
+            
+            if (service !== 'none' && !apiKey) {
+                alert('Please enter an API key');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/ai/configure', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        service: service,
+                        api_key: apiKey
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('aiStatus').innerHTML = `<div class="success">✅ ${data.message}</div>`;
+                } else {
+                    document.getElementById('aiStatus').innerHTML = `<div class="error">❌ ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('aiStatus').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
